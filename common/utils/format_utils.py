@@ -66,6 +66,8 @@ def format_dollar_value(value: float) -> str:
         return "{0:.2f}".format(value)
     return "{0:.6}".format(value)
 
+def bytes_to_hex_str(b: bytes) -> str:
+    return "0x" + b.hex()
 
 def format_coin_value(value: int, decimal: int = 18) -> str:
     """
@@ -104,3 +106,54 @@ def format_coin_value_with_unit(value: int, native_token: str) -> str:
 
 def hex_to_bytes(hex_value: str) -> bytes:
     return bytes.fromhex(hex_value[2:])
+
+def convert_bytes_to_hex(item):
+    if isinstance(item, dict):
+        return {key: convert_bytes_to_hex(value) for key, value in item.items()}
+    elif isinstance(item, list):
+        return [convert_bytes_to_hex(element) for element in item]
+    elif isinstance(item, tuple):
+        return tuple(convert_bytes_to_hex(element) for element in item)
+    elif isinstance(item, set):
+        return {convert_bytes_to_hex(element) for element in item}
+    elif isinstance(item, bytes):
+        return item.hex()
+    else:
+        return item
+
+def convert_dict(input_item):
+    if isinstance(input_item, dict):
+        result = []
+        for key, value in input_item.items():
+            entry = {"name": key, "value": None, "type": None}
+            if isinstance(value, (list, tuple, set)):
+                entry["type"] = "list"
+                entry["value"] = convert_dict(value)
+            elif isinstance(value, dict):
+                entry["type"] = "list"
+                entry["value"] = convert_dict(value)
+            elif isinstance(value, str):
+                entry["type"] = "string"
+                entry["value"] = value
+            elif isinstance(value, int):
+                entry["type"] = "int"
+                entry["value"] = value
+            else:
+                entry["type"] = "unknown"
+                entry["value"] = value
+
+            result.append(entry)
+        return result
+
+    elif isinstance(input_item, (list, tuple, set)):
+        return [convert_dict(item) for item in input_item]
+
+    return input_item
+
+
+def hex_str_to_bytes(h: str) -> bytes:
+    if not h:
+        return None
+    if h.startswith("0x"):
+        return bytes.fromhex(h[2:])
+    return bytes.fromhex(h)

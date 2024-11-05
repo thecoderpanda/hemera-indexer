@@ -1,7 +1,6 @@
 import logging
 from typing import List
 
-from common.utils.web3_utils import ZERO_ADDRESS
 from indexer.domain.log import Log
 from indexer.domain.token_transfer import TokenTransfer, extract_transfer_from_log
 from indexer.jobs.base_job import FilterTransactionDataJob
@@ -28,7 +27,9 @@ class ERC20TransferJob(FilterTransactionDataJob):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._contract_list = self.user_defined_config.get("contract_address")
+        self.logger.debug("Full user defined config: %s", self.user_defined_config)
+        
+        self._contract_list = self.user_defined_config.get("contract_address", [])
         self.logger.info("ERC20 contracts to process %s", self._contract_list)
 
     def get_filter(self):
